@@ -7,7 +7,10 @@ import Video, { IVideo } from "@/models/Video";
 export async function GET() {
   try {
     await connectToDatabase();
-    const videos = await Video.find({}).sort({ createdAt: -1 }).lean();
+    const videos = await Video.find({})
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
 
     if (!videos || videos.length === 0) {
       return NextResponse.json([], { status: 200 });
@@ -35,21 +38,23 @@ export async function POST(request: NextRequest) {
     const body: IVideo = await request.json();
 
     // Validate required fields
-    if (
-      !body.title ||
-      !body.description ||
-      !body.videoUrl ||
-      !body.thumbnailUrl
-    ) {
+    if (!body.title || !body.description || !body.videoUrl) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Create new video with default values
+    const now = new Date();
+
+    // Create new video with default values and timestamps
     const videoData = {
       ...body,
+      userId: session.user.id,
+      createdAt: now,
+      updatedAt: now,
+      likes: [],
+      comments: [],
       controls: body.controls ?? true,
       transformation: {
         height: 1920,
@@ -59,7 +64,11 @@ export async function POST(request: NextRequest) {
     };
 
     const newVideo = await Video.create(videoData);
-    return NextResponse.json(newVideo);
+    const populatedVideo = await Video.findById(newVideo._id)
+      .populate('userId', 'name email')
+      .lean();
+
+    return NextResponse.json(populatedVideo);
   } catch (error) {
     console.error("Error creating video:", error);
     return NextResponse.json(

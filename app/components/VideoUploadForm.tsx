@@ -7,18 +7,36 @@ import { Loader2 } from "lucide-react";
 import { useNotification } from "./Notification";
 import { apiClient } from "@/lib/api-client";
 import FileUpload from "./FileUpload";
+import { useSession } from "next-auth/react";
+import mongoose from "mongoose";
 
 interface VideoFormData {
   title: string;
   description: string;
   videoUrl: string;
   thumbnailUrl: string;
+  controls?: boolean;
+  transformation?: {
+    height: number;
+    width: number;
+    quality: number;
+  };
+  userId: mongoose.Types.ObjectId;
+  url: string;
+  caption: string;
+  likes: mongoose.Types.ObjectId[];
+  comments: {
+    userId: mongoose.Types.ObjectId;
+    content: string;
+    createdAt: Date;
+  }[];
 }
 
 export default function VideoUploadForm() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { showNotification } = useNotification();
+  const { data: session } = useSession();
 
   const {
     register,
@@ -31,12 +49,23 @@ export default function VideoUploadForm() {
       description: "",
       videoUrl: "",
       thumbnailUrl: "",
+      controls: true,
+      transformation: {
+        height: 1920,
+        width: 1080,
+        quality: 100,
+      },
+      url: "",
+      caption: "",
+      likes: [],
+      comments: [],
     },
   });
 
   const handleUploadSuccess = (response: IKUploadResponse) => {
     setValue("videoUrl", response.filePath);
     setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
+    setValue("url", response.url);
     showNotification("Video uploaded successfully!", "success");
   };
 
@@ -50,9 +79,20 @@ export default function VideoUploadForm() {
       return;
     }
 
+    if (!session?.user?.id) {
+      showNotification("Please login to upload videos", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      await apiClient.createVideo(data);
+      const videoData = {
+        ...data,
+        userId: session.user.id as unknown as mongoose.Types.ObjectId,
+        caption: data.description, // Using description as caption
+      };
+      
+      await apiClient.createVideo(videoData);
       showNotification("Video published successfully!", "success");
 
       // Reset form after successful submission
@@ -60,6 +100,8 @@ export default function VideoUploadForm() {
       setValue("description", "");
       setValue("videoUrl", "");
       setValue("thumbnailUrl", "");
+      setValue("url", "");
+      setValue("caption", "");
       setUploadProgress(0);
     } catch (error) {
       showNotification(

@@ -1,6 +1,17 @@
 import { IVideo } from "@/models/Video";
+import mongoose from "mongoose";
 
-export type VideoFormData = Omit<IVideo, "_id">;
+export type VideoFormData = Omit<IVideo, "_id" | "createdAt" | "updatedAt"> & {
+  userId: mongoose.Types.ObjectId;
+  url: string;
+  caption: string;
+  likes: mongoose.Types.ObjectId[];
+  comments: {
+    userId: mongoose.Types.ObjectId;
+    content: string;
+    createdAt: Date;
+  }[];
+};
 
 type FetchOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
