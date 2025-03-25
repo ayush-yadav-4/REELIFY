@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FaHeart, FaRegHeart, FaComment, FaShare, FaBookmark } from 'react-icons/fa';
+import { FaHeart, FaComment, FaShare, FaBookmark } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
-import { useNotification } from './Notification';
 import { toast } from 'react-hot-toast';
 import { IVideo } from '@/models/Video';
 import mongoose from 'mongoose';
@@ -26,9 +25,8 @@ export type VideoCardProps = Omit<IVideo, 'userId' | 'comments'> & {
   comments: IComment[];
 };
 
-export default function VideoCard({ _id, title, description, videoUrl, userId, likes: initialLikes, comments: initialComments }: VideoCardProps) {
+export default function VideoCard({ _id, title, videoUrl, userId, likes: initialLikes, comments: initialComments }: VideoCardProps) {
   const { data: session } = useSession();
-  const { showNotification } = useNotification();
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(initialLikes);
   const [comments, setComments] = useState(initialComments);
@@ -62,7 +60,7 @@ export default function VideoCard({ _id, title, description, videoUrl, userId, l
         setLikes([...likes, new mongoose.Types.ObjectId(String(session.user.id))]);
       }
       setIsLiked(!isLiked);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update like');
     }
   };
@@ -91,7 +89,7 @@ export default function VideoCard({ _id, title, description, videoUrl, userId, l
       setComments([...comments, data.comment]);
       setNewComment('');
       toast.success('Comment added successfully');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to add comment');
     }
   };

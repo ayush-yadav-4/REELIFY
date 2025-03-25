@@ -1,7 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
 import VideoCard, { type VideoCardProps } from './VideoCard';
-import { toast } from 'react-hot-toast';
 import { IVideo } from '@/models/Video';
 import { FaVideo, FaUpload } from 'react-icons/fa';
 import Link from 'next/link';

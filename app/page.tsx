@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { IVideo } from "@/models/Video";
 import { apiClient } from "@/lib/api-client";
 import VideoFeed from "./components/VideoFeed";
-import Header from "./components/Header";
 import { FaFire } from "react-icons/fa";
 
 export default function Home() {

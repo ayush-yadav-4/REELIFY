@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Video from "@/models/Video";
-import mongoose from "mongoose";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { videoId: string } }
 ) {
   try {
