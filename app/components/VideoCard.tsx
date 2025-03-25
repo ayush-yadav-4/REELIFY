@@ -60,7 +60,8 @@ export default function VideoCard({ _id, title, videoUrl, userId, likes: initial
         setLikes([...likes, new mongoose.Types.ObjectId(String(session.user.id))]);
       }
       setIsLiked(!isLiked);
-    } catch (_error) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to update like');
     }
   };
@@ -89,7 +90,8 @@ export default function VideoCard({ _id, title, videoUrl, userId, likes: initial
       setComments([...comments, data.comment]);
       setNewComment('');
       toast.success('Comment added successfully');
-    } catch (_error) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to add comment');
     }
   };

@@ -7,10 +7,11 @@ const imagekit = new ImageKit({
   urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT!,
 });
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
     try {
         return NextResponse.json(imagekit.getAuthenticationParameters());
-    } catch (_error) {
+    } catch (error) {
+        console.error(error);
         return NextResponse.json({
             error: "ImageKit Auth Failed"
         }, { status: 500 });
