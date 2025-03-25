@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import Video from "@/models/Video";
 
+type RouteContext = {
+  params: {
+    videoId: string;
+  };
+};
+
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: { videoId: string } }
+  request: NextRequest,
+  context: RouteContext
 ) {
   try {
     await connectToDatabase();
-    const video = await Video.findById(params.videoId)
+    const video = await Video.findById(context.params.videoId)
       .populate('userId', 'name email')
       .lean();
 
