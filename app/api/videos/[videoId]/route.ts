@@ -3,9 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import Video from "@/models/Video";
 
 type RouteContext = {
-  params: {
-    videoId: string;
-  };
+  params: Promise<{ videoId: string }>;
 };
 
 export async function GET(
@@ -13,8 +11,9 @@ export async function GET(
   context: RouteContext
 ) {
   try {
+    const { videoId } = await context.params;
     await connectToDatabase();
-    const video = await Video.findById(context.params.videoId)
+    const video = await Video.findById(videoId)
       .populate('userId', 'name email')
       .lean();
 
