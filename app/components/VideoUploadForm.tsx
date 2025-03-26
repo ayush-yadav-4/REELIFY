@@ -32,6 +32,13 @@ interface VideoFormData {
   }[];
 }
 
+const VIDEO_DIMENSIONS = {
+  width: 1080,
+  height: 1920,
+  maxSize: 50 * 1024 * 1024, // 50MB
+  allowedTypes: ['video/mp4', 'video/quicktime', 'video/x-msvideo']
+};
+
 export default function VideoUploadForm() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -51,8 +58,8 @@ export default function VideoUploadForm() {
       thumbnailUrl: "",
       controls: true,
       transformation: {
-        height: 1920,
-        width: 1080,
+        height: VIDEO_DIMENSIONS.height,
+        width: VIDEO_DIMENSIONS.width,
         quality: 100,
       },
       url: "",
@@ -62,11 +69,45 @@ export default function VideoUploadForm() {
     },
   });
 
-  const handleUploadSuccess = (response: IKUploadResponse) => {
-    setValue("videoUrl", response.filePath);
-    setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
-    setValue("url", response.url);
-    showNotification("Video uploaded successfully!", "success");
+  const validateVideo = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!VIDEO_DIMENSIONS.allowedTypes.includes(file.type)) {
+        showNotification("Please upload a valid video file (MP4, MOV, AVI)", "error");
+        resolve(false);
+        return;
+      }
+
+      if (file.size > VIDEO_DIMENSIONS.maxSize) {
+        showNotification("Video size should be less than 50MB", "error");
+        resolve(false);
+        return;
+      }
+
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const isValid = video.videoWidth === VIDEO_DIMENSIONS.width && 
+                       video.videoHeight === VIDEO_DIMENSIONS.height;
+        if (!isValid) {
+          showNotification(`Video dimensions must be ${VIDEO_DIMENSIONS.width}x${VIDEO_DIMENSIONS.height}`, "error");
+        }
+        resolve(isValid);
+      };
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleUploadSuccess = async (response: IKUploadResponse) => {
+    try {
+      setValue("videoUrl", response.filePath);
+      setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
+      setValue("url", response.url);
+      showNotification("Video uploaded successfully!", "success");
+    } catch (error) {
+      console.error("Failed to process video", error);
+      showNotification("Failed to process video", "error");
+    }
   };
 
   const handleUploadProgress = (progress: number) => {
@@ -89,7 +130,7 @@ export default function VideoUploadForm() {
       const videoData = {
         ...data,
         userId: session.user.id as unknown as mongoose.Types.ObjectId,
-        caption: data.description, // Using description as caption
+        caption: data.description,
       };
       
       await apiClient.createVideo(videoData);
@@ -116,10 +157,12 @@ export default function VideoUploadForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="form-control">
-        <label className="label">Title</label>
+        <label className="label">
+          <span className="label-text text-white">Title</span>
+        </label>
         <input
           type="text"
-          className={`input input-bordered ${
+          className={`input input-bordered bg-gray-800 text-white ${
             errors.title ? "input-error" : ""
           }`}
           {...register("title", { required: "Title is required" })}
@@ -132,9 +175,11 @@ export default function VideoUploadForm() {
       </div>
 
       <div className="form-control">
-        <label className="label">Description</label>
+        <label className="label">
+          <span className="label-text text-white">Description</span>
+        </label>
         <textarea
-          className={`textarea textarea-bordered h-24 ${
+          className={`textarea textarea-bordered h-24 bg-gray-800 text-white ${
             errors.description ? "textarea-error" : ""
           }`}
           {...register("description", { required: "Description is required" })}
@@ -147,16 +192,19 @@ export default function VideoUploadForm() {
       </div>
 
       <div className="form-control">
-        <label className="label">Upload Video</label>
+        <label className="label">
+          <span className="label-text text-white">Upload Video (1080x1920)</span>
+        </label>
         <FileUpload
           fileType="video"
           onSuccess={handleUploadSuccess}
           onProgress={handleUploadProgress}
+          onValidate={validateVideo}
         />
         {uploadProgress > 0 && (
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
             <div
-              className="bg-primary h-2.5 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-orange-500 to-rose-500 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
@@ -165,7 +213,7 @@ export default function VideoUploadForm() {
 
       <button
         type="submit"
-        className="btn btn-primary btn-block"
+        className="btn btn-primary btn-block bg-gradient-to-r from-orange-500 to-rose-500 text-white"
         disabled={loading || !uploadProgress}
       >
         {loading ? (

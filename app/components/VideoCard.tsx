@@ -164,10 +164,10 @@ export default function VideoCard({ _id, title, videoUrl, userId, likes: initial
       {/* Comments Modal */}
       {showComments && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowComments(false)}>
-          <div className="bg-white rounded-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-gray-900 rounded-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Comments</h3>
-              <button onClick={() => setShowComments(false)} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-xl font-bold text-white">Comments</h3>
+              <button onClick={() => setShowComments(false)} className="text-gray-400 hover:text-white">
                 ✕
               </button>
             </div>
@@ -180,12 +180,12 @@ export default function VideoCard({ _id, title, videoUrl, userId, likes: initial
                   </div>
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2">
-                      <h4 className="font-semibold">{comment.userId?.name || 'Anonymous'}</h4>
-                      <span className="text-xs text-gray-500">
+                      <h4 className="font-semibold text-white">{comment.userId?.name || 'Anonymous'}</h4>
+                      <span className="text-xs text-gray-400">
                         {new Date(comment.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-gray-600">{comment.content}</p>
+                    <p className="text-gray-300">{comment.content}</p>
                   </div>
                 </div>
               ))}
@@ -197,11 +197,11 @@ export default function VideoCard({ _id, title, videoUrl, userId, likes: initial
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-white placeholder-gray-400"
               />
               <button
                 onClick={handleComment}
-                className="px-4 py-2 bg-gradient-to-r from-orange-400 to-rose-400 text-white rounded-lg hover:opacity-90"
+                className="px-4 py-2 bg-gradient-to-r from-orange-400 to-rose-400 text-white rounded-lg hover:opacity-90 transition-all"
               >
                 Post
               </button>

@@ -9,12 +9,14 @@ interface FileUploadProps {
   onSuccess: (res: IKUploadResponse) => void;
   onProgress?: (progress: number) => void;
   fileType?: "image" | "video";
+  onValidate?: (file: File) => Promise<boolean>;
 }
 
 export default function FileUpload({
   onSuccess,
   onProgress,
   fileType = "image",
+  onValidate,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export default function FileUpload({
   };
 
   const validateFile = (file: File) => {
+    // Basic validation first
     if (fileType === "video") {
       if (!file.type.startsWith("video/")) {
         setError("Please upload a valid video file");
@@ -63,6 +66,17 @@ export default function FileUpload({
         return false;
       }
     }
+
+    // If external validation is provided, start the upload
+    // The external validation will be handled in the parent component
+    if (onValidate) {
+      onValidate(file).then(isValid => {
+        if (!isValid) {
+          setError("Video validation failed");
+        }
+      });
+    }
+
     return true;
   };
 
